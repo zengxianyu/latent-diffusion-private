@@ -6,6 +6,8 @@ from tqdm import trange
 
 from omegaconf import OmegaConf
 from PIL import Image
+import sys
+sys.path.append(".")
 
 from ldm.models.diffusion.ddim import DDIMSampler
 from ldm.util import instantiate_from_config
