@@ -1,0 +1,95 @@
+model:
+  base_learning_rate: 4.5e-06
+  target: ldm.models.autoencoder.VQModel
+  params:
+    embed_dim: 3
+    n_embed: 8192
+    monitor: val/rec_loss
+
+    ddconfig:
+      double_z: false
+      z_channels: 3
+      resolution: 256
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult:
+      - 1
+      - 2
+      - 4
+      num_res_blocks: 2
+      attn_resolutions: []
+      dropout: 0.0
+    lossconfig:
+      target: taming.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      params:
+        disc_conditional: false
+        disc_in_channels: 3
+        disc_start: 0
+        disc_weight: 0.75
+        codebook_weight: 1.0
+    recnet_path: ../_guided-diffusion/output_autoenc_augblur_2_1.0_std0.2/net_40000.pth
+    recnetconfig:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        image_size: 256
+        in_channels: 3
+        out_channels: 3
+        model_channels: 64
+        attention_resolutions:
+        # note: this isn\t actually the resolution but
+        # the downsampling factor, i.e. this corresnponds to
+        # attention on spatial resolution 8,16,32, as the
+        # spatial reolution of the latents is 64 for f4
+        - 8
+        - 16
+        - 32
+        num_res_blocks: 2
+        channel_mult:
+        - 1
+        - 1
+        - 2
+        - 2
+        - 4
+        - 4
+        num_head_channels: 64
+        num_heads: 4
+        num_heads_upsample: -1
+        use_scale_shift_norm: True
+        resblock_updown: True
+        use_new_attention_order: True
+
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 12
+    wrap: True
+    train:
+      target: ldm.data.imagenet.ImageNetSRTrain
+      params:
+        size: 256
+        degradation: pil_nearest
+    validation:
+      target: ldm.data.imagenet.ImageNetSRValidation
+      params:
+        size: 256
+        degradation: pil_nearest
+
+lightning:
+  callbacks:
+    save_checkpoint:
+      target: pytorch_lightning.callbacks.ModelCheckpoint
+      params:
+        save_last: True
+        every_n_train_steps: 3000
+        save_top_k: -1
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 5000000000
+        max_images: 8
+        increase_log_steps: False
+
+  trainer:
+    benchmark: True
+    accumulate_grad_batches: 2

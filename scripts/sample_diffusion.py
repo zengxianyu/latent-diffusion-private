@@ -1,3 +1,4 @@
+import pdb
 import argparse, os, sys, glob, datetime, yaml
 import torch
 import time
@@ -164,6 +165,11 @@ def save_logs(logs, path, n_saved=0, key="sample", np_path=None):
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--vqgan_ckpt",
+        type=str,
+        required=False
+    )
+    parser.add_argument(
         "-r",
         "--resume",
         type=str,
@@ -279,10 +285,12 @@ if __name__ == "__main__":
     eval_mode = True
 
     if opt.logdir != "none":
-        locallog = logdir.split(os.sep)[-1]
-        if locallog == "": locallog = logdir.split(os.sep)[-2]
-        print(f"Switching logdir from '{logdir}' to '{os.path.join(opt.logdir, locallog)}'")
-        logdir = os.path.join(opt.logdir, locallog)
+        logdir = opt.logdir
+    #    pdb.set_trace()
+    #    locallog = logdir.split(os.sep)[-1]
+    #    if locallog == "": locallog = logdir.split(os.sep)[-2]
+    #    print(f"Switching logdir from '{logdir}' to '{os.path.join(opt.logdir, locallog)}'")
+    #    logdir = os.path.join(opt.logdir, locallog)
 
     print(config)
 
@@ -290,12 +298,20 @@ if __name__ == "__main__":
     print(f"global step: {global_step}")
     print(75 * "=")
     print("logging to:")
-    logdir = os.path.join(logdir, "samples", f"{global_step:08}", now)
+    #logdir = os.path.join(logdir, "samples", f"{global_step:08}", now)
     imglogdir = os.path.join(logdir, "img")
     numpylogdir = os.path.join(logdir, "numpy")
 
-    os.makedirs(imglogdir)
-    os.makedirs(numpylogdir)
+    if opt.vqgan_ckpt is not None:
+        state = torch.load(opt.vqgan_ckpt)
+        m, u = model.first_stage_model.load_state_dict(state['state_dict'], strict=False)
+        print("missng ")
+        print(m)
+        print("unused")
+        print(u)
+
+    os.makedirs(imglogdir, exist_ok=True)
+    os.makedirs(numpylogdir, exist_ok=True)
     print(logdir)
     print(75 * "=")
 

@@ -43,6 +43,11 @@ def get_parser(**parser_kwargs):
         help="postfix for logdir",
     )
     parser.add_argument(
+        "--finetune",
+        type=str,
+        default="",
+    )
+    parser.add_argument(
         "-r",
         "--resume",
         type=str,
@@ -533,6 +538,14 @@ if __name__ == "__main__":
 
         # model
         model = instantiate_from_config(config.model)
+        if opt.finetune != "":
+            print(f"load from pretrained {opt.finetune}")
+            sd = torch.load(opt.finetune, map_location=model.device)
+            m, u = model.load_state_dict(sd['state_dict'], strict=False)
+            print("missing keys:")
+            print(m)
+            print("unexpected keys:")
+            print(u)
 
         # trainer and callbacks
         trainer_kwargs = dict()

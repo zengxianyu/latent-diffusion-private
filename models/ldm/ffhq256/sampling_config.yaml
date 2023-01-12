@@ -1,0 +1,10 @@
+base:
+- models/ldm/ffhq256/config.yaml
+batch_size: 8
+custom_steps: 200
+eta: 1.0
+logdir: output/ffqh256-1k/mixinit-nocls/epoch=2-step=2999.ckpt
+n_samples: 16
+resume: models/ldm/ffhq256/model.ckpt
+vanilla_sample: false
+vqgan_ckpt: logs/2023-01-02T15-53-22_vqgan-ffhqmixinit-recnet/testtube/version_0/checkpoints/epoch=2-step=2999.ckpt
