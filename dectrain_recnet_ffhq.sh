@@ -1,4 +1,4 @@
-python main.py --base configs/autoencoder/autoencoder_vq_8x8x3_recnet.yaml -t --gpus 0,1 \
+python main.py --base configs/autoencoder/autoencoder_vq_8x8x3_recnet.yaml -t --gpus 0,1,2,3 \
 	model.target=ldm.models.autoencoder.VQDecModel \
 	model.params.image_key=png \
 	data.params.train.target=ldm.data.listdata.SimpleListDataset \
@@ -11,6 +11,6 @@ python main.py --base configs/autoencoder/autoencoder_vq_8x8x3_recnet.yaml -t --
 	data.params.validation.params.data_list=/data/yzeng22/FFHQ_recon_val.txt \
 	data.params.validation.params.postfix=["png"] \
 	data.params.validation.params.augpf=["png"] \
-	data.params.batch_size=16 \
-	--finetune logs/2022-12-31T14-15-22_vqgan-ffhq-nocls/ffhq-init/checkpoints/ffhq_init_vq-f4.ckpt \
-	--name vqgan-ffhqmixinit-recnet \
+	data.params.batch_size=8 \
+	--name vqgan-ffhqmixinit-recnet-tanh0.05q \
+	--finetune  logs/2023-01-12T14-13-15_vqgan-ffhqmixinit-recnet-tanh0.05q/testtube/version_0/checkpoints/ffhq_init_vq-f4.ckpt

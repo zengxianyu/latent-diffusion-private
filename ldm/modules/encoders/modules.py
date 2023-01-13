@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
 from functools import partial
-import clip
+try:
+    import clip
+except:
+    pass
 from einops import rearrange, repeat
 import kornia
 

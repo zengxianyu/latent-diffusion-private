@@ -164,6 +164,7 @@ class VQDecModel(pl.LightningModule):
             with torch.no_grad():
                 t = torch.Tensor([self.dumt]*x.size(0)).to(x.device)
                 x = self.recnet(x,t)
+                x = torch.tanh(x)
             x = x.detach()
 
         if optimizer_idx == 0:
@@ -200,6 +201,7 @@ class VQDecModel(pl.LightningModule):
             with torch.no_grad():
                 t = torch.Tensor([self.dumt]*x.size(0)).to(x.device)
                 x = self.recnet(x,t)
+                x = torch.tanh(x)
             x = x.detach()
         aeloss, log_dict_ae = self.loss(qloss, x, xrec, 0,
                                         self.global_step,
