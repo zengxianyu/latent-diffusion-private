@@ -1,4 +1,4 @@
-python main.py --base configs/autoencoder/autoencoder_vq_8x8x3.yaml -t --gpus 0, \
+python main.py --base configs/autoencoder/autoencoder_vq_8x8x3.yaml -t --gpus 0,1 \
 	model.target=ldm.models.autoencoder.VQDecModel \
 	model.params.image_key="JPEG" \
 	data.params.train.target=ldm.data.listdata.SimpleListDataset \
