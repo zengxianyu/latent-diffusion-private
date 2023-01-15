@@ -65,7 +65,7 @@ class SimpleListDataset(Dataset):
                 elif name.endswith("npy"):
                     data = np.load(path_data)
                     data = torch.FloatTensor(data)
-                elif name in ["jpg", "jpeg", "png"]:
+                elif name in ["jpg", "jpeg", "png", "JPEG"]:
                     data = Image.open(path_data).convert("RGB")
                     data = self.totensor(data)
                     data = data*2-1
