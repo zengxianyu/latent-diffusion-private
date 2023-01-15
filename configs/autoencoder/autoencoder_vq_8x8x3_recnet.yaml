@@ -28,7 +28,7 @@ model:
         disc_start: 0
         disc_weight: 0.75
         codebook_weight: 1.0
-    recnet_path: ../output/q_start100_cls0.05_tanh/net_60000.pth
+    recnet_path: ../output/q_start100_cls0.05_tanh/net_120000.pth
     recnetconfig:
       target: ldm.modules.diffusionmodules.openaimodel.UNetModel
       params:
