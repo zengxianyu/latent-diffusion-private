@@ -1,5 +1,6 @@
-python main.py --base configs/autoencoder/autoencoder_vq_8x8x3.yaml -t --gpus 0,1 \
+python main.py --base configs/autoencoder/autoencoder_vq_8x8x3.yaml -t --gpus 0, \
 	model.target=ldm.models.autoencoder.VQDecModel \
+	model.params.recnet_path="../imagenet/q_100_noise_cls1/net_280000.pth" \
 	model.params.image_key="JPEG" \
 	data.params.train.target=ldm.data.listdata.SimpleListDataset \
 	data.params.train.params.data_dir=/data/common/ILSVRC/Data/CLS-LOC/train \
