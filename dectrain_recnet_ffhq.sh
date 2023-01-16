@@ -12,5 +12,5 @@ python main.py --base configs/autoencoder/autoencoder_vq_8x8x3_recnet.yaml -t --
 	data.params.validation.params.postfix=["png"] \
 	data.params.validation.params.augpf=["png"] \
 	data.params.batch_size=8 \
-	--name vqgan-ffhqmixinit-recnet-tanh0.05q \
+	--name vqgan-ffhqmixinit-recnet-tanh0.05q-120000 \
 	--finetune  logs/2023-01-12T14-13-15_vqgan-ffhqmixinit-recnet-tanh0.05q/testtube/version_0/checkpoints/ffhq_init_vq-f4.ckpt
