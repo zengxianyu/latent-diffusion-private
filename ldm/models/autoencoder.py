@@ -1,4 +1,5 @@
 import torch
+import math
 import pdb
 import pytorch_lightning as pl
 import torch.nn.functional as F
@@ -20,6 +21,8 @@ class VQDecModel(pl.LightningModule):
                  clslossconfig=None,
                  recnetconfig=None,
                  recnet_path=None,
+                 recnetlabel=None,
+                 num_labels=2,
                  ckpt_path=None,
                  ignore_keys=[],
                  image_key="image",
@@ -35,11 +38,24 @@ class VQDecModel(pl.LightningModule):
         super().__init__()
         self.cls_loss = instantiate_from_config(clslossconfig) if clslossconfig is not None \
                 else None
-        self.recnet = instantiate_from_config(recnetconfig) if recnetconfig is not None \
-                else None
-        if self.recnet is not None:
+        if recnetconfig is not None:
+            self.y_in = None
+            if recnetlabel is not None:
+                num_bit = int(math.log(num_labels, 2))
+                assert 2**num_bit == num_labels
+
+                print(f"using label {recnetlabel}")
+                label_one = "{0:b}".format(recnetlabel).zfill(num_bit)
+                print(f"using label {label_one}")
+                label_one = [int(s) for s in label_one]
+                label_one = torch.Tensor(label_one)[None]
+                self.y_in = label_one
+                recnetconfig['params']['num_classes'] = -num_bit
+
+            self.recnet = instantiate_from_config(recnetconfig)
             self.dumt = 100
             self.recnet.load_state_dict(torch.load(recnet_path))
+
         self.embed_dim = embed_dim
         self.n_embed = n_embed
         self.image_key = image_key
@@ -162,8 +178,10 @@ class VQDecModel(pl.LightningModule):
 
         if self.recnet is not None:
             with torch.no_grad():
+                y_in = self.y_in.expand(x.size(0),-1).to(x.device) \
+                        if self.y_in is not None else None
                 t = torch.Tensor([self.dumt]*x.size(0)).to(x.device)
-                x = self.recnet(x,t)
+                x = self.recnet(x,t,y=y_in)
                 x = torch.tanh(x)
             x = x.detach()
 
@@ -199,8 +217,10 @@ class VQDecModel(pl.LightningModule):
         xrec, qloss, ind = self(x, return_pred_indices=True)
         if self.recnet is not None:
             with torch.no_grad():
+                y_in = self.y_in.expand(x.size(0),-1).to(x.device) \
+                        if self.y_in is not None else None
                 t = torch.Tensor([self.dumt]*x.size(0)).to(x.device)
-                x = self.recnet(x,t)
+                x = self.recnet(x,t, y=y_in)
                 x = torch.tanh(x)
             x = x.detach()
         aeloss, log_dict_ae = self.loss(qloss, x, xrec, 0,
