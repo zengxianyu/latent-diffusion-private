@@ -36,8 +36,13 @@ class VQDecModel(pl.LightningModule):
                  use_ema=False
                  ):
         super().__init__()
-        self.cls_loss = instantiate_from_config(clslossconfig) if clslossconfig is not None \
-                else None
+        self.cls_loss = None
+        if clslossconfig is not None:
+            if recnetlabel is not None:
+                num_bit = int(math.log(num_labels, 2))
+                assert 2**num_bit == num_labels
+                clslossconfig['params']['num_bit'] = num_bit
+            self.cls_loss = instantiate_from_config(clslossconfig)
         if recnetconfig is not None:
             self.y_in = None
             if recnetlabel is not None:
@@ -191,10 +196,13 @@ class VQDecModel(pl.LightningModule):
                                             last_layer=self.get_last_layer(), split="train",
                                             predicted_indices=ind)
             if self.cls_loss is not None:
-                clsloss = self.cls_loss(xrec)
+                y_in = self.y_in.expand(x.size(0),-1).to(x.device) \
+                        if self.y_in is not None else None
+                clsloss = self.cls_loss(xrec, y_in)
                 clsloss = clsloss.mean()
+                print(f"using cls loss: {clsloss}")
                 log_dict_ae['clsloss'] = clsloss
-                aeloss = aeloss + clsloss
+                aeloss = aeloss + clsloss*0.05
 
             self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
             return aeloss
