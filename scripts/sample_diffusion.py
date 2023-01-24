@@ -108,7 +108,7 @@ def make_convolutional_sample(model, batch_size, vanilla=False, custom_steps=Non
     print(f'Throughput for this batch: {log["throughput"]}')
     return log
 
-def run(model, logdir, batch_size=50, vanilla=False, custom_steps=None, eta=None, n_samples=50000, nplog=None):
+def run(model, logdir, batch_size=50, vanilla=False, custom_steps=None, eta=None, n_samples=50000, nplog=None, prefix=""):
     if vanilla:
         print(f'Using Vanilla DDPM sampling with {model.num_timesteps} sampling steps.')
     else:
@@ -126,16 +126,16 @@ def run(model, logdir, batch_size=50, vanilla=False, custom_steps=None, eta=None
             logs = make_convolutional_sample(model, batch_size=batch_size,
                                              vanilla=vanilla, custom_steps=custom_steps,
                                              eta=eta)
-            n_saved = save_logs(logs, logdir, n_saved=n_saved, key="sample")
+            n_saved = save_logs(logs, logdir, n_saved=n_saved, key=f"sample", prefix=prefix)
             all_images.extend([custom_to_np(logs["sample"])])
             if n_saved >= n_samples:
                 print(f'Finish after generating {n_saved} samples')
                 break
-        all_img = np.concatenate(all_images, axis=0)
-        all_img = all_img[:n_samples]
-        shape_str = "x".join([str(x) for x in all_img.shape])
-        nppath = os.path.join(nplog, f"{shape_str}-samples.npz")
-        np.savez(nppath, all_img)
+        #all_img = np.concatenate(all_images, axis=0)
+        #all_img = all_img[:n_samples]
+        #shape_str = "x".join([str(x) for x in all_img.shape])
+        #nppath = os.path.join(nplog, f"{shape_str}-samples.npz")
+        #np.savez(nppath, all_img)
 
     else:
        raise NotImplementedError('Currently only sampling for unconditional models supported.')
@@ -143,20 +143,20 @@ def run(model, logdir, batch_size=50, vanilla=False, custom_steps=None, eta=None
     print(f"sampling of {n_saved} images finished in {(time.time() - tstart) / 60.:.2f} minutes.")
 
 
-def save_logs(logs, path, n_saved=0, key="sample", np_path=None):
+def save_logs(logs, path, n_saved=0, key="sample", np_path=None, prefix=""):
     for k in logs:
         if k == key:
             batch = logs[key]
             if np_path is None:
                 for x in batch:
                     img = custom_to_pil(x)
-                    imgpath = os.path.join(path, f"{key}_{n_saved:06}.png")
+                    imgpath = os.path.join(path, f"{prefix}_{key}_{n_saved:06}.png")
                     img.save(imgpath)
                     n_saved += 1
             else:
                 npbatch = custom_to_np(batch)
                 shape_str = "x".join([str(x) for x in npbatch.shape])
-                nppath = os.path.join(np_path, f"{n_saved}-{shape_str}-samples.npz")
+                nppath = os.path.join(np_path, f"{prefix}_{n_saved}-{shape_str}-samples.npz")
                 np.savez(nppath, npbatch)
                 n_saved += npbatch.shape[0]
     return n_saved
@@ -164,6 +164,11 @@ def save_logs(logs, path, n_saved=0, key="sample", np_path=None):
 
 def get_parser():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--idx",
+        type=int,
+        default=0
+    )
     parser.add_argument(
         "--vqgan_ckpt",
         type=str,
@@ -326,6 +331,6 @@ if __name__ == "__main__":
 
     run(model, imglogdir, eta=opt.eta,
         vanilla=opt.vanilla_sample,  n_samples=opt.n_samples, custom_steps=opt.custom_steps,
-        batch_size=opt.batch_size, nplog=numpylogdir)
+        batch_size=opt.batch_size, nplog=numpylogdir, prefix=opt.idx)
 
     print("done.")

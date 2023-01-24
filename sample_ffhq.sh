@@ -2,6 +2,7 @@
 #--vqgan_ckpt logs/2022-12-28T19-12-19_vqgan-nocls/testtube/version_0/checkpoints/epoch=0-step=47999.ckpt \
 #logs/2023-01-02T15-52-06_vqgan-ffhqmixinit-nocls/testtube//version_0/checkpoints/epoch=16-step=17999.ckpt
 
+
 pathin="logs/2023-01-02T15-53-22_vqgan-ffhqmixinit-recnet/testtube/version_0/checkpoints"
 files="
 epoch=38-step=41999.ckpt
